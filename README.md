@@ -13,7 +13,7 @@ AI 영상 모델 없이 **HTML/CSS/JS로 장면을 코딩하고, 헤드리스 Ch
 ### Claude Code
 
 ```
-/plugin marketplace add seoddhh/apple-style-promovideo-skills
+/plugin marketplace add seoddhh/apple-style-promo-video-skills
 /plugin install apple-style-promo-video@seoddhh-skills
 ```
 
@@ -22,7 +22,7 @@ AI 영상 모델 없이 **HTML/CSS/JS로 장면을 코딩하고, 헤드리스 Ch
 ### 기타 에이전트 (Codex, Cursor 등)
 
 ```bash
-npx skills add seoddhh/apple-style-promovideo-skills
+npx skills add seoddhh/apple-style-promo-video-skills
 ```
 
 또는 `skills/apple-style-promo-video` 폴더를 각 에이전트의 스킬 폴더에 직접 복사합니다.
