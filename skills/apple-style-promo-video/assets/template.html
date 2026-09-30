@@ -1,0 +1,80 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:P;font-weight:500;src:url(node_modules/pretendard/dist/web/static/woff2/Pretendard-Medium.woff2)}
+@font-face{font-family:P;font-weight:600;src:url(node_modules/pretendard/dist/web/static/woff2/Pretendard-SemiBold.woff2)}
+@font-face{font-family:P;font-weight:700;src:url(node_modules/pretendard/dist/web/static/woff2/Pretendard-Bold.woff2)}
+@font-face{font-family:P;font-weight:800;src:url(node_modules/pretendard/dist/web/static/woff2/Pretendard-ExtraBold.woff2)}
+:root{--bg:#fff;--ink:#111;--accent:#FFD600;--sub:#8a8a8e;--soft:#F2F2F4;
+  --W:1920px;--H:1080px;--padX:160px;--safeT:100px;--safeB:100px;--hl:128px;--body:36px}
+body[data-format="9:16"]{--W:1080px;--H:1920px;--padX:80px;--safeT:220px;--safeB:320px;--hl:120px;--body:40px}
+body[data-format="1:1"]{--W:1080px;--H:1080px;--padX:90px;--safeT:90px;--safeB:90px;--hl:104px;--body:36px}
+body[data-format="4:5"]{--W:1080px;--H:1350px;--padX:90px;--safeT:110px;--safeB:110px;--hl:110px;--body:38px}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:var(--W);height:var(--H);overflow:hidden;background:var(--bg);font-family:P,sans-serif;color:var(--ink);word-break:keep-all}
+.scene{position:absolute;inset:0;visibility:hidden}
+.frame{position:absolute;left:var(--padX);right:var(--padX);top:var(--safeT);bottom:var(--safeB)} /* 안전영역 */
+.head{font-weight:800;font-size:var(--hl);letter-spacing:-.04em;line-height:1.1}
+.w{display:inline-block;margin-right:.24em}
+.sub{color:var(--sub);font-weight:500}
+.card{background:#fff;border-radius:40px;box-shadow:0 24px 80px rgba(0,0,0,.10),0 0 0 1px rgba(0,0,0,.05)}
+.demo-note{position:absolute;right:var(--padX);bottom:calc(var(--safeB)*.4);font-size:20px;color:var(--sub)}
+</style></head><body>
+
+<!-- 장면마다 .scene 하나. id는 SCENES의 id와 같게 -->
+<section class="scene" id="s-hook">
+  <div class="frame" style="display:flex;align-items:center;justify-content:center;text-align:center">
+    <h1 class="head" id="hook-h"><span class="w">질문</span><span class="w">한</span><span class="w">줄로</span><span class="w">연다</span></h1>
+  </div>
+</section>
+
+<section class="scene" id="s-beat1">
+  <div class="frame"><!-- 헤드라인(5단) + UI 카드(7단) --></div>
+</section>
+
+<section class="scene" id="s-end" style="background:#000">
+  <div class="frame" style="display:flex;align-items:center;justify-content:center"></div>
+</section>
+
+<div class="demo-note" id="demoNote">시연용 화면</div>
+
+<script>
+// ---------- 포맷 ----------
+const FORMAT=new URLSearchParams(location.search).get('format')||'16:9';
+document.body.dataset.format=FORMAT;
+
+// ---------- 헬퍼 ----------
+const $=id=>document.getElementById(id);
+const cl=x=>Math.max(0,Math.min(1,x));
+const p=(t,a,b)=>cl((t-a)/(b-a));                          // 구간 진행률
+const eo=x=>1-Math.pow(1-x,4);                             // easeOutQuart: 등장
+const eio=x=>x<.5?8*x**4:1-Math.pow(-2*x+2,4)/2;           // easeInOutQuart: 이동·전환
+const spring=x=>x<=0?0:1-Math.exp(-7*x)*Math.cos(11*x);    // 감쇠 스프링: 팝업
+const lerp=(a,b,k)=>a+(b-a)*k;
+function words(el,lt,start,gap=.14){[...el.querySelectorAll('.w')].forEach((w,i)=>{
+  const k=eo(p(lt,start+i*gap,start+i*gap+.55));
+  w.style.opacity=k; w.style.transform=`translateY(${(1-k)*60}px)`; w.style.filter=`blur(${(1-k)*14}px)`;});}
+
+// ---------- 장면 ----------
+// dur: 장면 길이(초). overlap: 앞 장면과 겹치는 시간(전환용). role: hook|problem|beat|proof|end (시간 배분 검사용)
+const SCENES=[
+  {id:'s-hook', role:'hook', dur:2.0, draw(lt){ words($('hook-h'),lt,.1); }},
+  {id:'s-beat1',role:'beat', dur:4.5, overlap:.3, draw(lt){ /* 맥락 → 행동 → 결과 → 증거 */ }},
+  {id:'s-end',  role:'end',  dur:2.5, overlap:.2, draw(lt){ }},
+];
+// 시작 시간 자동 누적
+let acc=0; for(const s of SCENES){ s.start=acc-(s.overlap||0); s.end=s.start+s.dur; acc=s.end; }
+window.DURATION=acc;
+window.TIMELINE=SCENES.map(({id,role,start,end})=>({id,role,start,end}));
+
+const geo={};
+function measure(){ /* 도착 좌표 측정: 부모 transform을 none으로 두고 getBoundingClientRect() */ }
+
+window.render=function(t){
+  for(const s of SCENES){
+    const el=$(s.id), on=t>=s.start && t<s.end;
+    el.style.visibility=on?'visible':'hidden';        // 범위 밖 장면은 매 프레임 숨김
+    if(on) s.draw(t-s.start, t);                        // draw 안에서는 early return 금지
+  }
+  $('demoNote').style.opacity=1;                         // 시연용 데이터가 없으면 이 요소를 지운다
+};
+window.init=async()=>{await document.fonts.ready; measure(); render(0);};
+</script></body></html>

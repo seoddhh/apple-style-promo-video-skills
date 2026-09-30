@@ -1,0 +1,16 @@
+{
+  "name": "seoddhh-skills",
+  "owner": { "name": "seoddh" },
+  "metadata": {
+    "description": "Agent skills by seoddh"
+  },
+  "plugins": [
+    {
+      "name": "apple-style-promo-video",
+      "description": "HTML/CSS/JS 모션그래픽을 헤드리스 Chromium + ffmpeg로 렌더링해 애플 광고풍 홍보영상 MP4를 만드는 스킬",
+      "source": "./",
+      "strict": false,
+      "skills": ["./skills/apple-style-promo-video"]
+    }
+  ]
+}
