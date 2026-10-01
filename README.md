@@ -1,60 +1,117 @@
 # Apple-style Promo Video Skill
 
-AI 영상 모델 없이 **HTML/CSS/JS로 장면을 코딩하고, 헤드리스 Chromium으로 프레임 단위 캡처해 ffmpeg로 MP4**를 만드는 에이전트 스킬입니다. 서비스·앱·SaaS·AI 제품·개발자 도구의 홍보영상, 런칭 필름, 기능 소개 쇼츠, 데모데이/IR 발표 영상을 애플 광고풍 모션그래픽(키네틱 타이포, UI 인터랙션, 데이터 시각화)으로 만듭니다.
+내 웹·앱을 **애플 광고·키노트처럼 보이는 홍보영상(MP4)** 으로 만들어 주는 에이전트 스킬입니다.
+URL 하나만 주면 몇 가지 질문에 한 번 답하는 것으로 완성 영상을 받습니다.
 
-- 한글과 UI가 깨지지 않습니다 (실제 폰트로 렌더링)
-- 타이밍을 프레임 단위로 조절하고, 고치면 바로 다시 렌더링합니다
-- 16:9 / 9:16 / 1:1 / 4:5 비율을 파라미터 하나로 바꿉니다
+- 키네틱 타이포그래피와 제품 UI 모션그래픽으로 만듭니다 (AI 영상 생성이 아닙니다)
+- 한글이 깨지지 않습니다
+- 16:9 / 9:16 / 1:1 / 4:5 비율을 지원합니다
 
-> 만들 수 없는 것: 실사 인물·제품 촬영 느낌, 음악 생성. 음원을 주면 비트에 맞춰 합칩니다.
+> 만들 수 없는 것: 실사 촬영, 3D 제품 렌더, 음악 생성. 음원을 주면 영상에 합쳐 줍니다.
 
-## 설치
+### 영상을 만드는 방식
 
-### Claude Code
+AI 영상 모델을 쓰지 않습니다. 에이전트가 **장면을 웹페이지처럼 코딩**하고, 그 페이지를 한 프레임씩 찍어 영상으로 이어 붙입니다.
+
+```
+HTML/CSS/JS로 장면 코딩  →  헤드리스 Chromium(Playwright)이 프레임 단위 캡처  →  ffmpeg로 MP4 인코딩
+```
+
+- **글자가 깨지지 않습니다.** 실제 폰트(Pretendard)로 렌더링하기 때문입니다.
+- **타이밍이 정확합니다.** 모든 화면을 시간 값 하나로 계산하므로, 어느 프레임이든 똑같이 다시 만들 수 있습니다.
+- **고치기 쉽습니다.** 문구, 색, 길이를 코드에서 바꾸고 바로 다시 렌더링합니다.
+- **스스로 검수합니다.** 렌더가 끝나면 프레임을 뽑아 텍스트 대비, 깜빡임, 장면별 시간 배분을 검사하고 문제를 고친 뒤 전달합니다.
+
+필요한 도구(Chromium, ffmpeg, 폰트)는 에이전트가 작업 환경에 직접 설치해서 씁니다.
+
+---
+
+## 이렇게 만들어집니다
+
+```
+ ① 요청              ② 질문 1회               ③ 자동 제작                    ④ 완성
+ "홍보영상 만들어줘"  →  파악한 내용 요약      →  카피 → 스토리보드 →         →  MP4 전달
+ + URL·스크린샷         + 빈 곳만 선택지로        장면 제작 → 렌더 → 검수        + 수정 옵션
+```
+
+중간에 확인을 요청하지 않습니다. **처음에 한 번 답하고, 끝에 영상을 받습니다.**
+
+②에서 묻는 것은 아래 네 가지뿐입니다. 모르면 비워 두면 기본값으로 진행하고, "알아서 해줘"라고 하면 질문 없이 바로 만듭니다.
+
+| 질문 | 선택지 | 기본값 |
+|---|---|---|
+| 어디에 쓸 영상인가요? | 랜딩·유튜브 16:9 30초 / 쇼츠·릴스 9:16 15초 / 발표 16:9 45초 / 인스타 4:5 20초 | 16:9 30초 |
+| 스타일 | 키노트 다크 / 클린 화이트 / 컬러 블록 / 템포 키네틱 | 키노트 다크 |
+| 보고 나서 할 행동 | 사이트 방문 / 앱 다운로드 / 무료로 시작 / 사전 등록 | 사이트 방문 |
+| UI 화면 | 스크린샷 사용 / 사이트 보고 재현 / 타이포만 | 사이트 보고 재현 |
+
+## 어떤 철학으로 만드나요
+
+애플의 브랜드 규칙을 따르는 게 아니라, **애플처럼 보이고 애플처럼 혹하게** 만드는 것이 목표입니다. 3D 제품 렌더 대신 **타이포그래피가 주인공**입니다.
+
+- **크게, 한 문장씩.** 화면을 압도하는 헤드라인을 쓰고, 한 화면에는 한 문장만 넣습니다. 남는 공간은 여백으로 둡니다.
+- **색은 절제합니다.** 글자색과 회색만 쓰고, 꽂히는 한 단어에만 색이나 그라데이션을 줍니다.
+- **리듬은 긴장 → 리빌 → 증명 → 각인 순서입니다.**
+  1. 문제를 짧게 끊어 칩니다.
+  2. 잠깐 정적을 둔 뒤 제품명이 등장합니다.
+  3. 실제 UI가 움직이며 기능을 증명합니다.
+  4. 꽂히는 한 문장으로 끝냅니다.
+- **카피는 마침표로 끊습니다.** "빠르다. 정확하다. 그리고, 쉽다." 형용사 대신 숫자와 결과로 말합니다.
+- **타이포는 혹하게, UI는 믿게 만듭니다.** 기능 장면에는 실제 문장, 숫자, 이름 같은 구체적인 결과가 보여야 합니다.
+
+## 미리 준비하면 좋은 것
+
+| 준비물 | 있으면 좋은 이유 | 없으면 |
+|---|---|---|
+| **서비스 URL** | 제품 소개, 기능, 브랜드 컬러를 에이전트가 직접 읽어 갑니다 | 한 줄 소개와 기능을 물어봅니다 |
+| **핵심 화면 스크린샷 2~5장** | 실제 UI로 기능 장면을 만들어 가장 설득력이 있습니다 | 사이트를 보고 UI를 재현하거나 타이포만으로 만듭니다 |
+| **로고** (SVG 또는 투명 PNG) | 엔드카드에 쓰입니다 | 제품명 글자로 대신합니다 |
+| **보여줄 기능 1~3개** | 영상의 절반 이상을 차지하는 재료입니다 | 사이트에서 골라 씁니다 |
+| **실제 수치** (사용자 수, 절감 시간 등) | 숫자 히어로 장면으로 씁니다 | 숫자 장면을 넣지 않습니다. 수치를 지어내지 않습니다 |
+| **음원** (선택) | 비트에 맞춰 합칩니다 | 무음 영상으로 만듭니다 |
+
+---
+
+## 설치와 사용
+
+### 먼저: 레포 받기
+
+```bash
+git clone https://github.com/seoddhh/apple-style-promo-video-skills.git
+cd apple-style-promo-video-skills
+```
+
+스킬 본체는 `skills/apple-style-promo-video/` 폴더입니다. 아래 환경 중 쓰는 곳에 맞춰 설치합니다.
+
+### Claude 데스크탑 앱 · claude.ai 웹 (채팅)
+
+웹과 데스크탑 앱은 같은 계정을 쓰므로 한 번만 올리면 양쪽에서 모두 쓸 수 있습니다.
+
+1. 스킬 폴더를 zip으로 묶습니다.
+   ```bash
+   cd skills && zip -r apple-style-promo-video.zip apple-style-promo-video
+   ```
+2. **설정 → Capabilities**에서 **코드 실행 및 파일 생성**을 켭니다.
+3. 같은 화면의 **Skills**에서 **Upload skill**로 zip을 올리고 토글을 켭니다.
+4. 새 채팅에서 요청합니다.
+
+> 레포가 업데이트돼도 업로드한 스킬은 바뀌지 않습니다. 새 버전은 zip을 다시 올리세요.
+
+### Claude Code (터미널 · 데스크탑 앱 Code 탭)
+
+clone 없이 바로 설치됩니다.
 
 ```
 /plugin marketplace add seoddhh/apple-style-promo-video-skills
 /plugin install apple-style-promo-video@seoddhh-skills
 ```
 
-업데이트는 `/plugin marketplace update seoddhh-skills`로 받습니다.
-
-### 기타 에이전트 (Codex, Cursor 등)
-
-```bash
-npx skills add seoddhh/apple-style-promo-video-skills
-```
-
-또는 `skills/apple-style-promo-video` 폴더를 각 에이전트의 스킬 폴더에 직접 복사합니다.
-
-- Claude Code: `~/.claude/skills/`
-- Codex: `~/.codex/skills/` (버전에 따라 `.agents/skills/`)
-
-### claude.ai 웹 / Claude 데스크탑 앱 (채팅)
-
-웹과 데스크탑 앱의 채팅은 같은 계정 설정을 쓰므로, 한 번 업로드하면 양쪽에서 모두 쓸 수 있습니다.
-
-1. 스킬 폴더를 zip으로 묶습니다. zip 최상위에 `apple-style-promo-video/` 폴더가 있어야 합니다.
-
-   ```bash
-   cd skills && zip -r apple-style-promo-video.zip apple-style-promo-video
-   ```
-
-2. **설정 → Capabilities**에서 **코드 실행 및 파일 생성(Code execution and file creation)** 을 켭니다. 스킬은 코드 실행이 켜져 있어야 동작합니다.
-3. 같은 화면의 **Skills** 항목에서 **Upload skill**을 눌러 zip을 올리고, 토글을 켭니다.
-4. 새 채팅에서 "우리 앱 20초 홍보영상 만들어줘"처럼 요청하면 스킬이 자동으로 로드됩니다.
-
-> 채팅 환경에서는 Claude의 코드 실행 샌드박스에서 렌더링합니다. 샌드박스의 네트워크 정책에 따라 Playwright/Chromium, ffmpeg, Pretendard 설치가 막힐 수 있습니다. 이 경우 HTML까지만 받아서 로컬에서 `scripts/render.py`로 렌더링하거나, 아래 Claude Code 방식을 쓰세요.
->
-> 업로드한 스킬은 계정에 저장된 복사본이라 이 레포가 업데이트돼도 자동으로 바뀌지 않습니다. 새 버전은 zip을 다시 만들어 업로드합니다.
-
-### Claude 데스크탑 앱 (Code 탭)
-
-데스크탑 앱의 Code 탭은 로컬 Claude Code와 같은 `~/.claude` 설정을 씁니다. 터미널에서 위 Claude Code 설치 명령을 한 번 실행해 두면 Code 탭에서도 바로 쓸 수 있습니다. 렌더링은 내 컴퓨터에서 하므로 [필요 환경](#필요-환경)을 로컬에 설치해 두세요.
+- 업데이트: `/plugin marketplace update seoddhh-skills`
+- clone한 폴더를 직접 쓰려면: `cp -r skills/apple-style-promo-video ~/.claude/skills/`
 
 ### Claude Code 웹 (claude.ai/code)
 
-클라우드 세션은 매번 새 환경에서 시작하므로, 작업할 레포의 `.claude/settings.json`에 마켓플레이스와 플러그인을 적어 두면 세션이 시작될 때 자동으로 설치됩니다.
+작업할 레포의 `.claude/settings.json`에 아래 내용을 넣으면 세션이 시작될 때 자동으로 설치됩니다.
 
 ```json
 {
@@ -69,71 +126,72 @@ npx skills add seoddhh/apple-style-promo-video-skills
 }
 ```
 
-### 스킬은 어디서 받아오나요?
-
-공식 Anthropic 플러그인 디렉터리가 아니라 **이 GitHub 레포에서 직접** 받아옵니다.
-
-| 방식 | 받아오는 곳 | 업데이트 |
-|---|---|---|
-| `/plugin marketplace add` (Claude Code, 데스크탑 Code 탭, claude.ai/code) | GitHub `seoddhh/apple-style-promo-video-skills`를 클론하고, 레포의 `.claude-plugin/marketplace.json`을 목록으로 읽음 | `/plugin marketplace update seoddhh-skills` |
-| `npx skills add` | 같은 GitHub 레포 | 명령 재실행 |
-| zip 업로드 (claude.ai 웹, 데스크탑 채팅) | 업로드한 zip 파일 (계정에 저장된 복사본) | zip 재업로드 |
-
-`@seoddhh-skills`는 `marketplace.json`의 `name`으로, 이 레포가 제공하는 마켓플레이스 이름입니다. 레포를 private으로 바꾸면 GitHub 인증이 없는 사용자는 설치할 수 없습니다.
-
-## 필요 환경
-
-렌더링은 로컬(또는 코드 실행 환경)에서 이루어집니다.
+### Codex
 
 ```bash
-brew install ffmpeg                    # 또는 apt install ffmpeg
-pip install playwright && python3 -m playwright install chromium
-npm i pretendard                       # 한글 폰트 (영문 전용이면 @fontsource/inter)
+cp -r skills/apple-style-promo-video ~/.codex/skills/
 ```
 
-## 사용 예
+버전에 따라 스킬 폴더가 `~/.agents/skills/`일 수 있습니다. clone 없이 설치하려면 `npx skills add seoddhh/apple-style-promo-video-skills`를 씁니다.
 
+---
+
+## 사용 예시
+
+**기본: URL만 주기**
 ```
-우리 앱 20초 홍보영상 16:9로 만들어줘. https://example.com
+우리 서비스 홍보영상 만들어줘. https://example.com
 ```
 
-에이전트는 다음 순서로 진행합니다.
-
-1. **자료 조사 → 제작 브리프**: URL·레포·캡처를 먼저 읽고 브리프 초안을 보여준 뒤 빈칸만 확인
-2. **비트 시트 + 샷 리스트**: 핵심 기능마다 맥락 → 행동 → 결과 → 증거
-3. **핵심 비트 프리뷰**: 가장 중요한 기능 장면 5~8초를 먼저 렌더해 톤 확인
-4. **전체 렌더 + 프레임 QA**: 장면 중간과 전환 전후 프레임을 격자로 뽑아 검수
-
-### 원칙: 내용이 주인공
-
-- 오프닝은 짧게 (전체의 10% 이하). 로고 리빌은 엔드카드에서 한 번만
-- 시간의 60% 안팎을 핵심 기능 비트에 사용
-- 장식 모션은 영상 전체에서 2회 이하, 모션은 인과관계를 보여줄 때 사용
-- 한 화면 한 메시지
-
-## 스크립트 직접 사용
-
-```bash
-python3 scripts/render.py promo.html --format 16:9 --out promo.mp4
-python3 scripts/render.py promo.html --from 5 --to 12 --fps 15 --out preview.mp4   # 부분 프리뷰
-python3 scripts/qa_frames.py promo.mp4 promo.html                                  # 검수용 grid.png
+**스크린샷과 함께**
 ```
+첨부한 화면들로 우리 앱 쇼츠 만들어줘. 무료 체험 유도가 목적이야.
+```
+
+**질문 없이 바로**
+```
+https://example.com 홍보영상 알아서 만들어줘. 키노트 다크, 16:9 30초.
+```
+
+**대화 흐름 예시**
+```
+나     우리 서비스 홍보영상 만들어줘. https://example.com
+
+Claude Notely는 회의를 녹음하면 요약과 할 일을 자동으로 정리해 주는 서비스로 파악했어요.
+       기능은 ① 실시간 받아쓰기 ② 자동 요약 ③ 할 일 추출을 보여줄게요. 틀린 곳이 있으면 알려 주세요.
+       [용도] [스타일] [마지막 행동] [UI 화면]  ← 선택지로 표시
+
+나     (선택) 쇼츠 9:16 / 템포 키네틱 / 무료로 시작 / 사이트 보고 재현
+
+Claude (제작 후) 완성했어요. promo.mp4
+       구성: 훅 → 리빌 → 요약 → 할 일 → 수치 → 엔드카드
+       꽂히는 한 문장: "회의는 끝났다. 정리도 끝났다."
+       수정: [더 빠르게] [화이트 버전] [16:9 추가] [카피 톤 바꾸기]
+```
+
+**수정 요청은 이렇게**
+- "더 애플스럽게": 효과를 덜어 내고 여백과 정적을 늘립니다
+- "더 임팩트 있게": 템포 컷 훅, 그라데이션 문장, 숫자 장면을 넣습니다
+- "9:16 버전도": 같은 영상을 세로로 재배치합니다
+- "이 음원 넣어줘": 비트에 맞춰 장면 길이를 조정해 합칩니다
+
+> 채팅 환경에서 영상 렌더링 도구 설치가 막히면, 에이전트가 완성된 HTML과 렌더 명령 한 줄을 대신 드립니다.
+
+---
 
 ## 구조
 
 ```
-.claude-plugin/marketplace.json     Claude Code 플러그인 마켓플레이스 정의
 skills/apple-style-promo-video/
-├── SKILL.md                        에이전트가 읽는 스킬 본문
-├── assets/template.html            장면 모듈 + render(t) 순수 함수 템플릿
+├── SKILL.md                     스킬 본문 (흐름, 질문, 제작 순서, 검수)
+├── assets/template.html         장면 템플릿 + 타이포 무브 + 스타일 프리셋
 ├── references/
-│   ├── design-system.md            레이아웃, 안전영역, 텍스트 길이 한도
-│   ├── motion-recipes.md           텍스트·UI·전환 모션 레시피
-│   ├── scene-catalog.md            장면 유형 (플로우 데모, Before/After, 수치 증거 등)
-│   └── story-templates.md          영상 유형별 골격
-└── scripts/
-    ├── render.py                   Playwright 프레임 캡처 → ffmpeg MP4
-    └── qa_frames.py                검수용 프레임 격자 생성
+│   ├── typography-playbook.md   타이포 원칙, 시그니처 무브 14개, 카피 공식
+│   ├── design-system.md         스타일 프리셋, 색, 레이아웃, UI 요소
+│   ├── motion-recipes.md        UI·데이터 모션, 전환
+│   ├── scene-catalog.md         기능 장면 유형
+│   └── story-templates.md       용도별 골격
+└── scripts/                     렌더링·검수 스크립트 (에이전트가 사용)
 ```
 
 ## 라이선스
