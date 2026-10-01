@@ -7,6 +7,8 @@
   python3 render.py promo.html                                   # 16:9 전체
   python3 render.py promo.html --format 9:16 --out shorts.mp4
   python3 render.py promo.html --from 5 --to 12 --fps 15 --out preview.mp4   # 부분 프리뷰
+  python3 render.py promo.html --style clean --out promo_white.mp4          # 스타일 프리셋만 바꿔 다시 렌더
+  python3 render.py promo.html --motion reduced --out promo_reduced.mp4      # 저자극 버전
 """
 import argparse, os, subprocess, sys, time
 from playwright.sync_api import sync_playwright
@@ -21,10 +23,12 @@ ap.add_argument("--from", dest="t0", type=float, default=0.0)
 ap.add_argument("--to", dest="t1", type=float, default=None, help="기본값: 페이지의 DURATION")
 ap.add_argument("--out", default="promo.mp4")
 ap.add_argument("--crf", type=int, default=16)
+ap.add_argument("--motion", default="full", choices=["full", "reduced"], help="reduced: 이동·블러·스프링 대신 페이드 (페이지의 REDUCED 플래그)")
+ap.add_argument("--style", choices=["keynote", "clean", "color", "tempo"], help="페이지의 body 스타일 클래스를 덮어쓴다")
 a = ap.parse_args()
 
 W, H = SIZES[a.format]
-url = "file://" + os.path.abspath(a.html) + "?format=" + a.format
+url = "file://" + os.path.abspath(a.html) + "?format=" + a.format + "&motion=" + a.motion + ("&style=" + a.style if a.style else "")
 
 with sync_playwright() as p:
     b = p.chromium.launch()
@@ -57,4 +61,4 @@ with sync_playwright() as p:
     ff.wait()
     if errors:
         print("경고: 렌더 중 스크립트 오류 발생 —", "; ".join(errors[:3]))
-print(f"done {a.out}  {a.format} {W}x{H}  {t1 - a.t0:.1f}s @ {a.fps}fps")
+print(f"done {a.out}  {a.format} {W}x{H}  {t1 - a.t0:.1f}s @ {a.fps}fps  motion={a.motion} style={a.style or 'page'}")
