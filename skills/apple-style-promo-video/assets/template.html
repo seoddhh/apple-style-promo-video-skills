@@ -3,78 +3,271 @@
 @font-face{font-family:P;font-weight:600;src:url(node_modules/pretendard/dist/web/static/woff2/Pretendard-SemiBold.woff2)}
 @font-face{font-family:P;font-weight:700;src:url(node_modules/pretendard/dist/web/static/woff2/Pretendard-Bold.woff2)}
 @font-face{font-family:P;font-weight:800;src:url(node_modules/pretendard/dist/web/static/woff2/Pretendard-ExtraBold.woff2)}
-:root{--bg:#fff;--ink:#111;--accent:#FFD600;--sub:#8a8a8e;--soft:#F2F2F4;
-  --W:1920px;--H:1080px;--padX:160px;--safeT:100px;--safeB:100px;--hl:128px;--body:36px}
-body[data-format="9:16"]{--W:1080px;--H:1920px;--padX:80px;--safeT:220px;--safeB:320px;--hl:120px;--body:40px}
-body[data-format="1:1"]{--W:1080px;--H:1080px;--padX:90px;--safeT:90px;--safeB:90px;--hl:104px;--body:36px}
-body[data-format="4:5"]{--W:1080px;--H:1350px;--padX:90px;--safeT:110px;--safeB:110px;--hl:110px;--body:38px}
-*{margin:0;padding:0;box-sizing:border-box}
-html,body{width:var(--W);height:var(--H);overflow:hidden;background:var(--bg);font-family:P,sans-serif;color:var(--ink);word-break:keep-all}
-.scene{position:absolute;inset:0;visibility:hidden}
-.frame{position:absolute;left:var(--padX);right:var(--padX);top:var(--safeT);bottom:var(--safeB)} /* 안전영역 */
-.head{font-weight:800;font-size:var(--hl);letter-spacing:-.04em;line-height:1.1}
-.w{display:inline-block;margin-right:.24em}
-.sub{color:var(--sub);font-weight:500}
-.card{background:#fff;border-radius:40px;box-shadow:0 24px 80px rgba(0,0,0,.10),0 0 0 1px rgba(0,0,0,.05)}
-.demo-note{position:absolute;right:var(--padX);bottom:calc(var(--safeB)*.4);font-size:20px;color:var(--sub)}
-</style></head><body>
 
-<!-- 장면마다 .scene 하나. id는 SCENES의 id와 같게 -->
+/* ---------- 포맷 ---------- */
+:root{--W:1920px;--H:1080px;--padX:160px;--safeT:100px;--safeB:100px;
+  --hero:240px;--hl:136px;--subhead:60px;--body:36px;
+  /* 브랜드: 로고에서 뽑는다. --accent 면·선, --accent-ink 글자(배경 대비 4.5:1↑), --brand 컬러 블록 배경 */
+  --accent:#0071E3;--accent2:#7A5CFA;--brand:#3A2BD8}
+body[data-format="9:16"]{--W:1080px;--H:1920px;--padX:80px;--safeT:220px;--safeB:320px;--hero:190px;--hl:118px;--subhead:58px;--body:40px}
+body[data-format="1:1"]{--W:1080px;--H:1080px;--padX:90px;--safeT:90px;--safeB:90px;--hero:170px;--hl:100px;--subhead:50px;--body:34px}
+body[data-format="4:5"]{--W:1080px;--H:1350px;--padX:90px;--safeT:110px;--safeB:110px;--hero:180px;--hl:108px;--subhead:52px;--body:36px}
+
+/* ---------- 스타일 프리셋 (body 클래스) + 장면 단위 반전 (.light / .dark) ---------- */
+.style-keynote,.style-tempo,.dark{--bg:#000;--ink:#F5F5F7;--sub:#86868B;--soft:#1C1C1E;--card:#1C1C1E;--line:rgba(255,255,255,.12);
+  --shadow:0 30px 90px rgba(0,0,0,.6);--accent-ink:#2997FF;--sheen-base:#BDBDC2;--sheen-hi:#FFFFFF}
+.style-clean,.light{--bg:#fff;--ink:#1D1D1F;--sub:#6E6E73;--soft:#F5F5F7;--card:#fff;--line:rgba(0,0,0,.08);
+  --shadow:0 24px 80px rgba(0,0,0,.10);--accent-ink:#0066CC;--sheen-base:#1D1D1F;--sheen-hi:#9A9AA0}
+.style-color,.color{--bg:var(--brand);--ink:#fff;--sub:rgba(255,255,255,.8);--soft:rgba(255,255,255,.14);--card:#fff;--line:rgba(255,255,255,.2);
+  --shadow:0 30px 90px rgba(0,0,0,.25);--accent-ink:#fff;--sheen-base:rgba(255,255,255,.82);--sheen-hi:#fff}
+.style-color .card,.color .card{--ink:#1D1D1F;--sub:#6E6E73;--soft:#F5F5F7;--line:rgba(0,0,0,.08);--accent-ink:#0066CC}
+
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{width:var(--W);height:var(--H);overflow:hidden;background:var(--bg);font-family:P,sans-serif;color:var(--ink);word-break:keep-all;-webkit-font-smoothing:antialiased}
+.scene{position:absolute;inset:0;visibility:hidden;background:var(--bg);color:var(--ink)}  /* 장면은 불투명: 디졸브는 위 장면이 덮으며 진행 */
+.scene.soft{background:var(--soft)}
+.frame{position:absolute;left:var(--padX);right:var(--padX);top:var(--safeT);bottom:var(--safeB)} /* 안전영역 */
+.center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.split{display:grid;grid-template-columns:5fr 7fr;gap:80px;align-items:center;height:100%}
+body[data-format="9:16"] .split,body[data-format="4:5"] .split,body[data-format="1:1"] .split{grid-template-columns:1fr;align-content:center;gap:56px}
+
+/* ---------- 타이포 ---------- */
+.hero{font-weight:800;font-size:var(--hero);letter-spacing:-.04em;line-height:1}
+.head{font-weight:700;font-size:var(--hl);letter-spacing:-.03em;line-height:1.05}
+.subhead{font-weight:600;font-size:var(--subhead);letter-spacing:-.015em;line-height:1.15}
+.eyebrow{font-weight:600;font-size:calc(var(--hl)*.24);color:var(--accent-ink);margin-bottom:.6em}
+.sub{color:var(--sub)}
+.num{font-variant-numeric:tabular-nums}
+.unit{font-size:.4em;letter-spacing:-.01em;margin-left:.08em}
+.w{display:inline-block;margin-right:.24em}
+.w:last-child{margin-right:0}
+.line{display:block;overflow:hidden;padding:.04em 0 .08em;margin:-.04em 0 -.08em}   /* 라인 마스크 리빌 */
+.line>span{display:inline-block}
+.swap{display:inline-block;vertical-align:top;height:1.15em;overflow:hidden;            /* 단어 교체: .line 안에 넣으면 lines()로 함께 등장 */
+  -webkit-mask-image:linear-gradient(transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(transparent,#000 12%,#000 88%,transparent)}
+.swap>span{display:block}.swap b{display:block;height:1.15em;line-height:1.15em;font-weight:inherit}
+/* 그라데이션 글자: 꽂히는 한 단어에만 */
+.grad{background-image:var(--grad);background-size:200% 100%;background-position:0 50%;-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.grad-spectrum{--grad:linear-gradient(90deg,#0A84FF 0%,#BF5AF2 30%,#FF375F 55%,#FF9F0A 75%,#0A84FF 100%)}
+.grad-metal{--grad:linear-gradient(180deg,#FFFFFF 20%,#8E8E93 100%);background-size:100% 100%}
+.grad-brand{--grad:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent))}
+.sheen{background-image:linear-gradient(100deg,var(--sheen-base) 42%,var(--sheen-hi) 50%,var(--sheen-base) 58%);background-size:300% 100%;background-position:100% 0;
+  -webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-fill-color:transparent}
+.roll-mask{--row:1.3em;height:calc(var(--row)*3);overflow:hidden}                    /* 리스트 롤 */
+.roll{padding-top:var(--row)}.roll>div{height:var(--row);line-height:var(--row);transform-origin:center}
+.wall{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;gap:.3em .7em;font-weight:700;letter-spacing:-.02em;font-size:calc(var(--hl)*.42);line-height:1.1}
+.wall>span{display:inline-block}.wall .l{font-size:1.8em}.wall .s{font-size:.75em;color:var(--sub)}
+
+/* ---------- UI ---------- */
+.card{background:var(--card);color:var(--ink);border-radius:40px;box-shadow:var(--shadow),0 0 0 1px var(--line)}
+.pill{display:inline-block;padding:.35em .9em;border-radius:999px;background:var(--soft);font-weight:600}
+.pill.on{background:var(--accent);color:#fff}
+/* Liquid Glass: 지도·사진·목록 위에 떠 있는 컨트롤에만 */
+.glass{background:rgba(255,255,255,.22);backdrop-filter:blur(22px) saturate(180%);-webkit-backdrop-filter:blur(22px) saturate(180%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75),inset 0 0 0 1px rgba(255,255,255,.28),0 10px 34px rgba(0,0,0,.14);border-radius:999px}
+.demo-note{position:absolute;right:var(--padX);bottom:calc(var(--safeB)*.4);font-size:22px;z-index:999}
+
+/* 예시 장면 전용 (교체할 것) */
+.todo{padding:44px 48px;font-size:var(--body)}
+.todo .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px;font-size:.8em}
+.todo .row{display:flex;align-items:center;gap:22px;padding:22px 0;border-top:1px solid var(--line);font-weight:600}
+.todo .row em{margin-left:auto;font-style:normal;font-weight:500;color:var(--sub);font-size:.8em}
+.chk{width:1.1em;height:1.1em;flex:none}.chk circle{fill:none;stroke:var(--line);stroke-width:2}
+.chk path{fill:none;stroke:var(--accent);stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:1}
+.logo{width:1.4em;height:1.4em;border-radius:.32em;background:var(--grad);display:inline-block}
+</style></head>
+<!-- 스타일 프리셋: style-keynote | style-clean | style-color | style-tempo  (URL ?style= 로 덮어쓸 수 있다) -->
+<body class="style-keynote">
+
+<!-- 장면마다 .scene 하나. DOM 순서 = SCENES 순서 (뒤 장면이 위에 쌓인다). 반전 장면은 class="scene light|dark|color" -->
+
+<!-- 훅: 템포 컷 -->
 <section class="scene" id="s-hook">
-  <div class="frame" style="display:flex;align-items:center;justify-content:center;text-align:center">
-    <h1 class="head" id="hook-h"><span class="w">질문</span><span class="w">한</span><span class="w">줄로</span><span class="w">연다</span></h1>
+  <div class="frame center"><div class="hero" id="hook-w"></div></div>
+</section>
+
+<!-- 정적 비트 -->
+<section class="scene" id="s-hush"></section>
+
+<!-- 리빌: 트래킹 인 + 빛 스윕, 투톤 둘째 줄 -->
+<section class="scene" id="s-reveal">
+  <div class="frame center">
+    <div class="hero sheen" id="rv-name" style="font-size:calc(var(--hero)*1.15)">Notely</div>
+    <p class="subhead" id="rv-sub" style="margin-top:.6em"><span class="line"><span class="sub">흩어진 일을, 한 곳에.</span></span></p>
   </div>
 </section>
 
-<section class="scene" id="s-beat1">
-  <div class="frame"><!-- 헤드라인(5단) + UI 카드(7단) --></div>
+<!-- 기능 1: 투톤 헤드라인 + UI 카드 -->
+<section class="scene light soft" id="s-beat1">
+  <div class="frame split">
+    <div>
+      <p class="eyebrow" id="b1-eye">회의 요약</p>
+      <h2 class="head" id="b1-h" style="font-size:calc(var(--hl)*.78)"><span class="line"><span>회의가 끝나면,</span></span><span class="line"><span class="sub">할 일도 끝.</span></span></h2>
+    </div>
+    <div class="card todo" id="b1-card">
+      <div class="top"><span class="pill">디자인 주간 회의</span><span class="sub">10월 2일 · 32분</span></div>
+      <div class="row"><svg class="chk" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"/><path pathLength="1" d="M7 12.5l3.2 3.2L17 9"/></svg>온보딩 시안 공유<em>지수 · 금</em></div>
+      <div class="row"><svg class="chk" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"/><path pathLength="1" d="M7 12.5l3.2 3.2L17 9"/></svg>결제 화면 QA<em>민호 · 월</em></div>
+      <div class="row"><svg class="chk" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11"/><path pathLength="1" d="M7 12.5l3.2 3.2L17 9"/></svg>런칭 카피 확정<em><span class="pill on" style="font-size:.9em">나 · 오늘</span></em></div>
+    </div>
+  </div>
 </section>
 
-<section class="scene" id="s-end" style="background:#000">
-  <div class="frame" style="display:flex;align-items:center;justify-content:center"></div>
+<!-- 기능 2: 단어 교체 -->
+<section class="scene light" id="s-beat2">
+  <div class="frame center">
+    <h2 class="head" id="b2-h" style="font-size:calc(var(--hero)*.8)"><span class="line"><span>더</span></span>
+      <span class="line"><span class="swap" id="b2-sw"><span><b>빠르게.</b><b>정확하게.</b><b class="grad grad-brand">가볍게.</b></span></span></span></h2>
+  </div>
+</section>
+
+<!-- 글자 속으로 줌: 마침표로 들어가 검정 화면 → 다음 장면으로 하드컷 -->
+<section class="scene light" id="s-done">
+  <div class="frame center"><h2 class="head" id="dn-h" style="font-size:var(--hero);color:#000"><span class="w">정리,</span><span class="w">끝<span id="dn-dot">.</span></span></h2></div>
+</section>
+
+<!-- 증거: 숫자 히어로 -->
+<section class="scene" id="s-proof">
+  <div class="frame center">
+    <div class="hero num" id="pf-num" style="font-size:calc(var(--hero)*1.4)"><span id="pf-n">120</span><span class="unit">분</span></div>
+    <p class="subhead sub" id="pf-sub" style="margin-top:.3em"><span class="line"><span>회의록 정리에 걸리는 시간</span></span></p>
+  </div>
+</section>
+
+<!-- 폭: 기능 월 -->
+<section class="scene" id="s-wall">
+  <div class="frame center">
+    <div class="wall" id="wl"><span>실시간 받아쓰기</span><span class="s">화자 구분</span><span class="l">자동 요약</span><span>번역</span><span class="s">슬랙 연동</span>
+      <span>할 일 추출</span><span class="l">검색</span><span class="s">캘린더</span><span>하이라이트</span><span class="s">PDF 내보내기</span><span class="l">공유</span><span class="s">노션 연동</span><span>태그</span></div>
+  </div>
+</section>
+
+<!-- 엔드카드 락업: 로고 → 꽂히는 한 문장(그라데이션) → CTA -->
+<section class="scene" id="s-end">
+  <div class="frame center">
+    <div id="end-logo" class="subhead" style="display:flex;align-items:center;gap:.4em"><i class="logo grad-spectrum"></i>Notely</div>
+    <h2 class="head" id="end-h" style="margin-top:.5em"><span class="line"><span class="grad grad-spectrum" id="end-g">회의는 끝났다.</span></span></h2>
+    <p class="subhead sub" id="end-cta" style="margin-top:1.1em;font-size:calc(var(--subhead)*.7)">notely.app에서 무료로 시작하기</p>
+  </div>
 </section>
 
 <div class="demo-note" id="demoNote">시연용 화면</div>
 
 <script>
-// ---------- 포맷 ----------
-const FORMAT=new URLSearchParams(location.search).get('format')||'16:9';
+// ---------- 포맷 · 스타일 · 저자극 ----------
+const Q=new URLSearchParams(location.search);
+const FORMAT=Q.get('format')||'16:9';
+const REDUCED=Q.get('motion')==='reduced';            // 이동·블러·스프링을 끄고 페이드만
 document.body.dataset.format=FORMAT;
+if(Q.get('style')) document.body.className='style-'+Q.get('style');
 
-// ---------- 헬퍼 ----------
+// ---------- 기본 헬퍼 ----------
 const $=id=>document.getElementById(id);
 const cl=x=>Math.max(0,Math.min(1,x));
 const p=(t,a,b)=>cl((t-a)/(b-a));                          // 구간 진행률
 const eo=x=>1-Math.pow(1-x,4);                             // easeOutQuart: 등장
 const eio=x=>x<.5?8*x**4:1-Math.pow(-2*x+2,4)/2;           // easeInOutQuart: 이동·전환
-const spring=x=>x<=0?0:1-Math.exp(-7*x)*Math.cos(11*x);    // 감쇠 스프링: 팝업
+const spring=x=>x<=0?0:REDUCED?eo(cl(x)):1-Math.exp(-7*x)*Math.cos(11*x);
 const lerp=(a,b,k)=>a+(b-a)*k;
-function words(el,lt,start,gap=.14){[...el.querySelectorAll('.w')].forEach((w,i)=>{
-  const k=eo(p(lt,start+i*gap,start+i*gap+.55));
-  w.style.opacity=k; w.style.transform=`translateY(${(1-k)*60}px)`; w.style.filter=`blur(${(1-k)*14}px)`;});}
+const mv=v=>REDUCED?0:v;                                    // 이동량: 저자극이면 0
+const fade=(el,lt,a,b)=>{el.style.opacity=eo(p(lt,a,b));};
+
+// ---------- 타이포 무브 (references/typography-playbook.md) ----------
+// ① 단어 빌드: <span class="w">
+function words(el,lt,start,gap=.12,dur=.6){[...el.querySelectorAll('.w')].forEach((w,i)=>{
+  const k=eo(p(lt,start+i*gap,start+i*gap+dur));
+  w.style.opacity=k; w.style.transform=`translateY(${mv((1-k)*.3)}em)`; w.style.filter=REDUCED?'none':`blur(${(1-k)*10}px)`;});}
+// ② 라인 마스크 리빌: <span class="line"><span>…</span></span>
+function lines(el,lt,start,gap=.1,dur=.85){[...el.querySelectorAll('.line>span')].forEach((s,i)=>{
+  const k=eo(p(lt,start+i*gap,start+i*gap+dur));
+  s.style.transform=`translateY(${mv((1-k)*110)}%)`; s.style.opacity=REDUCED?k:(k>0?1:0);});}
+// ③ 트래킹 인
+function trackIn(el,lt,start,dur=1.6,from=.4,to=-.03){const k=eo(p(lt,start,start+dur));
+  el.style.letterSpacing=(REDUCED?to:lerp(from,to,k))+'em'; el.style.opacity=eo(p(lt,start,start+dur*.6));
+  el.style.filter=REDUCED?'none':`blur(${(1-k)*8}px)`;}
+// ④ 템포 컷: 단어를 박자마다 하드컷. each는 숫자 또는 단어별 길이 배열
+function tempo(el,lt,start,list,each=.42){const d=[].concat(each);let s=start,i=-1,si=start;
+  for(let j=0;j<list.length&&lt>=s;j++){i=j;si=s;s+=d[Math.min(j,d.length-1)];}
+  if(el._ti!==i){el.innerHTML=i<0?'':list[i];el._ti=i;}
+  const k=eo(p(lt,si,si+.22)); el.style.transform=`scale(${1+mv(.05)*(1-k)})`;}
+// ⑤ 단어 교체: <span class="swap"><span><b>…</b><b>…</b></span></span>, times = 바뀌는 시각들
+function swap(el,lt,times,dur=.55){let y=0;for(const tt of times)y+=eio(p(lt,tt,tt+dur));
+  el.firstElementChild.style.transform=`translateY(${-y*1.15}em)`;}
+// ⑦ 그라데이션 흐름 (전역 t를 넘기면 장면이 바뀌어도 이어진다)
+function gradFlow(el,t,speed=.35){el.style.backgroundPosition=`${50+50*Math.sin(t*speed)}% 50%`;}
+// ⑧ 빛 스윕: class="sheen"
+function sheen(el,lt,start,dur=1.2){el.style.backgroundPosition=`${lerp(100,0,eio(p(lt,start,start+dur)))}% 0`;}
+// ⑨ 스케일 인
+function scaleIn(el,lt,start,dur=1.2,from=1.12){const k=eo(p(lt,start,start+dur));
+  el.style.opacity=k; el.style.transform=`scale(${REDUCED?1:lerp(from,1,k)})`; el.style.filter=REDUCED?'none':`blur(${(1-k)*12}px)`;}
+// ⑩ 숫자 히어로 (줄어드는 숫자도 된다: from > to)
+function countUp(el,lt,start,to,{dur=1.4,from=0,dec=0,suffix=''}={}){const k=eo(p(lt,start,start+dur));
+  el.textContent=lerp(from,to,k).toLocaleString('ko-KR',{minimumFractionDigits:dec,maximumFractionDigits:dec})+suffix;}
+// ⑪ 리스트 롤: .roll-mask > .roll > div, times = 한 칸씩 올라가는 시각들
+function listRoll(el,lt,times,dur=.6){const it=[...el.children];let pos=0;for(const tt of times)pos+=eio(p(lt,tt,tt+dur));
+  el.style.transform=`translateY(${-pos*it[0].offsetHeight}px)`;
+  it.forEach((x,i)=>{const d=Math.min(1,Math.abs(i-pos));x.style.opacity=1-d*.75;x.style.transform=`scale(${1-d*.1})`;});}
+// ⑫ 기능 월: 무작위(고정) 순서로 켜지고 focusAt부터 focus 하나만 남는다
+function wall(el,lt,start,{gap=.05,focus=-1,focusAt=1e9}={}){const it=[...el.children];
+  if(!el._ord){const r=it.map((_,i)=>[Math.abs(Math.sin(i*12.9898+4.1)*43758.5453)%1,i]).sort((a,b)=>a[0]-b[0]);
+    el._ord=[];r.forEach(([,i],o)=>el._ord[i]=o);}
+  const f=eio(p(lt,focusAt,focusAt+.6));
+  it.forEach((x,i)=>{const s=start+el._ord[i]*gap,k=eo(p(lt,s,s+.5)),on=i===focus;
+    x.style.opacity=k*(on?1:lerp(1,.16,f)); x.style.transform=`translateY(${mv((1-k)*.4)}em) scale(${on?1+f*.12:1})`;
+    x.style.color=on&&f>.3?'var(--accent-ink)':'';});}
+// ⑭ 글자 속으로 줌: measure()에서 setOrigin(글자 덩어리, 마침표 span) 후 zoomThrough
+function setOrigin(el,target,fy=.72){el.style.transform='none';const a=el.getBoundingClientRect(),b=target.getBoundingClientRect();
+  el.style.transformOrigin=`${b.left+b.width/2-a.left}px ${b.top+b.height*fy-a.top}px`;}
+function zoomThrough(el,lt,start,dur=.9,max=100){const k=p(lt,start,start+dur);el.style.transform=`scale(${1+Math.pow(k,3)*(max-1)})`;}
+// 퇴장: 감싸는 부모에 건다
+function leave(el,lt,start,dur=.35){const k=eio(p(lt,start,start+dur));
+  el.style.opacity=1-k; el.style.transform=`translateY(${mv(-k*30)}px)`;}
 
 // ---------- 장면 ----------
-// dur: 장면 길이(초). overlap: 앞 장면과 겹치는 시간(전환용). role: hook|problem|beat|proof|end (시간 배분 검사용)
+// dur: 길이(초). overlap: 앞 장면과 겹치는 시간 → 이 장면이 위에서 0→1로 디졸브. overlap 없음 = 하드컷.
+// tr:'manual' 이면 자동 디졸브를 끄고 draw에서 opacity를 정한다.
+// role: hook | problem | reveal | beat | proof | end  (qa_frames.py 시간 배분 검사용)
 const SCENES=[
-  {id:'s-hook', role:'hook', dur:2.0, draw(lt){ words($('hook-h'),lt,.1); }},
-  {id:'s-beat1',role:'beat', dur:4.5, overlap:.3, draw(lt){ /* 맥락 → 행동 → 결과 → 증거 */ }},
-  {id:'s-end',  role:'end',  dur:2.5, overlap:.2, draw(lt){ }},
+  {id:'s-hook', role:'hook', dur:2.4, draw(lt){
+    tempo($('hook-w'),lt,.15,['메일.','메신저.','회의록.','<span class="grad grad-spectrum">흩어진 일.</span>'],[.42,.42,.42,1]); gradFlow($('hook-w'),lt); }},
+  {id:'s-hush', role:'reveal', dur:.5, draw(){}},
+  {id:'s-reveal', role:'reveal', dur:3.2, draw(lt){
+    trackIn($('rv-name'),lt,.1,1.6); sheen($('rv-name'),lt,1.7,1.1); lines($('rv-sub'),lt,1.1); }},
+  {id:'s-beat1', role:'beat', dur:5.2, overlap:.4, draw(lt){
+    fade($('b1-eye'),lt,.4,.9); lines($('b1-h'),lt,.5,.35);
+    const c=$('b1-card'), k=eo(p(lt,.7,1.5)); c.style.opacity=k; c.style.transform=`translateY(${mv((1-k)*60)}px)`;
+    c.querySelectorAll('.row').forEach((r,i)=>{const s=1.5+i*.5, kk=eo(p(lt,s,s+.5));
+      r.style.opacity=kk; r.style.transform=`translateY(${mv((1-kk)*24)}px)`;
+      r.querySelector('path').style.strokeDashoffset=1-eo(p(lt,s+.4,s+.8));});
+    const last=c.querySelector('.pill.on'), sp=spring(p(lt,3.3,4.2)); last.style.display='inline-block'; last.style.transform=`scale(${.6+.4*sp})`; last.style.opacity=cl(sp*2); }},
+  {id:'s-beat2', role:'beat', dur:3.6, overlap:.4, draw(lt,t){
+    lines($('b2-h'),lt,.4,.15); swap($('b2-sw'),lt,[1.5,2.4]); gradFlow($('b2-sw').querySelector('.grad'),t); }},
+  {id:'s-done', role:'beat', dur:2.3, overlap:.4, draw(lt){
+    words($('dn-h'),lt,.4,.18); zoomThrough($('dn-h'),lt,1.4,.9); }},
+  {id:'s-proof', role:'proof', dur:3.0, draw(lt){                       // 하드컷: 앞 장면이 검정으로 가득 찬 순간
+    countUp($('pf-n'),lt,.3,3,{from:120,dur:1.5}); lines($('pf-sub'),lt,.9); }},
+  {id:'s-wall', role:'beat', dur:3.2, overlap:.4, draw(lt){
+    wall($('wl'),lt,.4,{gap:.06,focus:2,focusAt:2.0}); }},
+  {id:'s-end', role:'end', dur:3.4, overlap:.4, draw(lt,t){
+    scaleIn($('end-logo'),lt,.4,1); lines($('end-h'),lt,.9); gradFlow($('end-g'),t); fade($('end-cta'),lt,1.8,2.3); }},
 ];
-// 시작 시간 자동 누적
 let acc=0; for(const s of SCENES){ s.start=acc-(s.overlap||0); s.end=s.start+s.dur; acc=s.end; }
 window.DURATION=acc;
 window.TIMELINE=SCENES.map(({id,role,start,end})=>({id,role,start,end}));
 
 const geo={};
-function measure(){ /* 도착 좌표 측정: 부모 transform을 none으로 두고 getBoundingClientRect() */ }
+function measure(){ /* 도착 좌표·transform-origin 측정 */ setOrigin($('dn-h'),$('dn-dot')); }
 
 window.render=function(t){
-  for(const s of SCENES){
+  let top=null;
+  SCENES.forEach((s,i)=>{
     const el=$(s.id), on=t>=s.start && t<s.end;
-    el.style.visibility=on?'visible':'hidden';        // 범위 밖 장면은 매 프레임 숨김
-    if(on) s.draw(t-s.start, t);                        // draw 안에서는 early return 금지
-  }
-  $('demoNote').style.opacity=1;                         // 시연용 데이터가 없으면 이 요소를 지운다
+    el.style.visibility=on?'visible':'hidden'; el.style.zIndex=i;      // 범위 밖 장면은 매 프레임 숨김
+    if(on && s.tr!=='manual') el.style.opacity=s.overlap?eio(p(t-s.start,0,s.overlap)):1;
+    if(on){ s.draw(t-s.start, t); top=el; }                              // draw 안에서 early return 금지
+  });
+  const note=$('demoNote');                                               // 시연용 데이터가 없으면 이 요소를 지운다
+  if(note && top) note.style.color=getComputedStyle(top).getPropertyValue('--sub');
 };
 window.init=async()=>{await document.fonts.ready; measure(); render(0);};
 </script></body></html>
