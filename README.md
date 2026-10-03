@@ -178,6 +178,15 @@ Claude (제작 후) 완성했어요. promo.mp4
 > 채팅 환경에서 영상 렌더링 도구 설치가 막히면, 에이전트가 완성된 HTML과 렌더 명령 한 줄을 대신 드립니다.
 
 ---
+## 산출물 예시
+
+
+
+https://github.com/user-attachments/assets/cd7a6572-6de2-4ec8-bdb4-72b2a176df37
+
+
+
+---
 
 ## 구조
 
